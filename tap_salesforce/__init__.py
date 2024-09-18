@@ -21,7 +21,6 @@ from tap_salesforce.salesforce.credentials import (
 )
 
 LOGGER = singer.get_logger()
-LOGGER.setLevel('WARN')
 
 # the tap requires these keys
 REQUIRED_CONFIG_KEYS = ['api_type',
