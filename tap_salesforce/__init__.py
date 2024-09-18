@@ -2,6 +2,7 @@
 import asyncio
 import concurrent.futures
 import json
+import logging
 import sys
 from copy import deepcopy
 
@@ -21,6 +22,8 @@ from tap_salesforce.salesforce.credentials import (
 )
 
 LOGGER = singer.get_logger()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARN)
 
 # the tap requires these keys
 REQUIRED_CONFIG_KEYS = ['api_type',

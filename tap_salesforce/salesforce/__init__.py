@@ -1,3 +1,4 @@
+import logging
 import re
 import time
 import backoff
@@ -16,6 +17,8 @@ from tap_salesforce.salesforce.credentials import SalesforceAuth
 
 
 LOGGER = singer.get_logger()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARN)
 
 BULK_API_TYPE = "BULK"
 REST_API_TYPE = "REST"

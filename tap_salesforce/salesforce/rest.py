@@ -1,10 +1,13 @@
 # pylint: disable=protected-access
+import logging
 import singer
 import singer.utils as singer_utils
 from requests.exceptions import HTTPError
 from tap_salesforce.salesforce.exceptions import TapSalesforceException
 
 LOGGER = singer.get_logger()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARN)
 
 MAX_RETRIES = 4
 

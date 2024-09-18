@@ -1,6 +1,7 @@
 # pylint: disable=protected-access
 import csv
 import json
+import logging
 import sys
 import time
 import tempfile
@@ -19,6 +20,8 @@ ITER_CHUNK_SIZE = 1024
 DEFAULT_CHUNK_SIZE = 50000
 
 LOGGER = singer.get_logger()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARN)
 
 # pylint: disable=inconsistent-return-statements
 def find_parent(stream):
