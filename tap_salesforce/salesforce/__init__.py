@@ -15,7 +15,12 @@ from tap_salesforce.salesforce.exceptions import (
     TapSalesforceQuotaExceededException)
 from tap_salesforce.salesforce.credentials import SalesforceAuth
 
+handler = logging.StreamHandler()
+handler.setLevel(logging.WARN)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
+logger.addHandler(handler)
 logger.setLevel(logging.WARN)
 
 BULK_API_TYPE = "BULK"

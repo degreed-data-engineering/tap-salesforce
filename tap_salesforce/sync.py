@@ -6,7 +6,12 @@ from singer import Transformer, metadata, metrics
 from requests.exceptions import RequestException
 from tap_salesforce.salesforce.bulk import Bulk
 
+handler = logging.StreamHandler()
+handler.setLevel(logging.WARN)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
+logger.addHandler(handler)
 logger.setLevel(logging.WARN)
 
 BLACKLISTED_FIELDS = set(['attributes'])

@@ -21,7 +21,12 @@ from tap_salesforce.salesforce.credentials import (
     parse_credentials
 )
 
+handler = logging.StreamHandler()
+handler.setLevel(logging.WARN)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
+logger.addHandler(handler)
 logger.setLevel(logging.WARN)
 
 # the tap requires these keys

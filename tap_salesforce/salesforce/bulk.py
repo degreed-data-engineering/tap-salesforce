@@ -19,7 +19,12 @@ PK_CHUNKED_BATCH_STATUS_POLLING_SLEEP = 60
 ITER_CHUNK_SIZE = 1024
 DEFAULT_CHUNK_SIZE = 50000
 
+handler = logging.StreamHandler()
+handler.setLevel(logging.WARN)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
+logger.addHandler(handler)
 logger.setLevel(logging.WARN)
 
 # pylint: disable=inconsistent-return-statements

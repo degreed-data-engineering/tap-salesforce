@@ -4,8 +4,12 @@ import requests
 from collections import namedtuple
 from simple_salesforce import SalesforceLogin
 
-
+handler = logging.StreamHandler()
+handler.setLevel(logging.WARN)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
+logger.addHandler(handler)
 logger.setLevel(logging.WARN)
 
 OAuthCredentials = namedtuple('OAuthCredentials', (

@@ -5,7 +5,12 @@ import singer.utils as singer_utils
 from requests.exceptions import HTTPError
 from tap_salesforce.salesforce.exceptions import TapSalesforceException
 
+handler = logging.StreamHandler()
+handler.setLevel(logging.WARN)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
+logger.addHandler(handler)
 logger.setLevel(logging.WARN)
 
 MAX_RETRIES = 4
