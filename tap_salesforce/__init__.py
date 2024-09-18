@@ -2,7 +2,6 @@
 import asyncio
 import concurrent.futures
 import json
-from os import environ as env
 import sys
 from copy import deepcopy
 
@@ -22,8 +21,6 @@ from tap_salesforce.salesforce.credentials import (
 )
 
 LOGGER = singer.get_logger()
-if env.get("MELTANO_LOGGING_LEVEL"):
-    LOGGER.setLevel(env.get("MELTANO_LOGGING_LEVEL"))
 
 # the tap requires these keys
 REQUIRED_CONFIG_KEYS = ['api_type',
@@ -219,18 +216,18 @@ def do_discover(sf):
         missing_unsupported_field_names = [f[0] for f in unsupported_fields if f[0] not in field_name_set]
 
         if missing_unsupported_field_names:
-            LOGGER.info("Ignoring the following unsupported fields for object %s as they are missing from the field list: %s",
+            LOGGER.warn("Ignoring the following unsupported fields for object %s as they are missing from the field list: %s",
                         sobject_name,
                         ', '.join(sorted(missing_unsupported_field_names)))
 
         if filtered_unsupported_fields:
-            LOGGER.info("Not syncing the following unsupported fields for object %s: %s",
+            LOGGER.warn("Not syncing the following unsupported fields for object %s: %s",
                         sobject_name,
                         ', '.join(sorted([k for k, _ in filtered_unsupported_fields])))
 
         # Salesforce Objects are skipped when they do not have an Id field
         if not found_id_field:
-            LOGGER.info(
+            LOGGER.warn(
                 "Skipping Salesforce Object %s, as it has no Id field",
                 sobject_name)
             continue
@@ -288,10 +285,10 @@ def do_discover(sf):
     unsupported_tag_objects = [object_to_tag_references[f]
                                for f in sf_custom_setting_objects if f in object_to_tag_references]
     if unsupported_tag_objects:
-        LOGGER.info( #pylint:disable=logging-not-lazy
+        LOGGER.warn( #pylint:disable=logging-not-lazy
             "Skipping the following Tag objects, Tags on Custom Settings Salesforce objects " +
             "are not supported by the Bulk API:")
-        LOGGER.info(unsupported_tag_objects)
+        LOGGER.warn(unsupported_tag_objects)
         entries = [e for e in entries if e['stream']
                    not in unsupported_tag_objects]
 
@@ -400,7 +397,7 @@ def pop_deselected_schema(
         selected = is_property_selected(
             stream_name, metadata_map, property_breadcrumb
         )
-        LOGGER.info(stream_name + '.' + property_name + ' - ' + str(selected))
+        LOGGER.warn(stream_name + '.' + property_name + ' - ' + str(selected))
         if not selected:
             schema["properties"].pop(property_name)
             continue
@@ -426,10 +423,10 @@ async def sync_catalog_entry(sf, catalog_entry, state):
     mdata = metadata.to_map(catalog_entry['metadata'])
 
     if not stream_is_selected(mdata):
-        LOGGER.info("%s: Skipping - not selected", stream_name)
+        LOGGER.warn("%s: Skipping - not selected", stream_name)
         return
 
-    LOGGER.info("%s: Starting", stream_name)
+    LOGGER.warn("%s: Starting", stream_name)
 
     singer.write_state(state)
     key_properties = metadata.to_map(catalog_entry['metadata']).get((), {}).get('table-key-properties')
@@ -449,10 +446,10 @@ async def sync_catalog_entry(sf, catalog_entry, state):
     job_id = singer.get_bookmark(state, catalog_entry['tap_stream_id'], 'JobID')
     if job_id:
         with metrics.record_counter(stream) as counter:
-            LOGGER.info("Found JobID from previous Bulk Query. Resuming sync for job: %s", job_id)
+            LOGGER.warn("Found JobID from previous Bulk Query. Resuming sync for job: %s", job_id)
             # Resuming a sync should clear out the remaining state once finished
             await loop.run_in_executor(None, resume_syncing_bulk_query, sf, catalog_entry, job_id, state, counter)
-            LOGGER.info("Completed sync for %s", stream_name)
+            LOGGER.warn("Completed sync for %s", stream_name)
             state.get('bookmarks', {}).get(catalog_entry['tap_stream_id'], {}).pop('JobID', None)
             state.get('bookmarks', {}).get(catalog_entry['tap_stream_id'], {}).pop('BatchIDs', None)
             bookmark = state.get('bookmarks', {}).get(catalog_entry['tap_stream_id'], {}).pop('JobHighestBookmarkSeen', None)
@@ -477,10 +474,10 @@ async def sync_catalog_entry(sf, catalog_entry, state):
                                           'version',
                                           stream_version)
         await loop.run_in_executor(None, sync_stream, sf, catalog_entry, state, state_msg_threshold)
-        LOGGER.info("Completed sync for %s", stream_name)
+        LOGGER.warn("Completed sync for %s", stream_name)
 
 def do_sync(sf, catalog, state):
-    LOGGER.info("Starting sync")
+    LOGGER.warn("Starting sync")
 
     max_workers = CONFIG.get('max_workers', 8)
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
@@ -501,7 +498,7 @@ def do_sync(sf, catalog, state):
         loop.close()
 
     singer.write_state(state)
-    LOGGER.info("Finished sync")
+    LOGGER.warn("Finished sync")
 
 def main_impl():
     args = singer_utils.parse_args(REQUIRED_CONFIG_KEYS)

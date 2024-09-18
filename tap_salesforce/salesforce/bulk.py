@@ -5,7 +5,6 @@ import sys
 import time
 import tempfile
 import singer
-from os import environ as env
 from singer import metrics
 from requests.exceptions import RequestException
 
@@ -20,8 +19,6 @@ ITER_CHUNK_SIZE = 1024
 DEFAULT_CHUNK_SIZE = 50000
 
 LOGGER = singer.get_logger()
-if env.get("MELTANO_LOGGING_LEVEL"):
-    LOGGER.setLevel(env.get("MELTANO_LOGGING_LEVEL"))
 
 # pylint: disable=inconsistent-return-statements
 def find_parent(stream):
@@ -119,8 +116,8 @@ class Bulk():
                         yield result
                     # Remove the completed batch ID and write state
                     state['bookmarks'][catalog_entry['tap_stream_id']]["BatchIDs"].remove(completed_batch_id)
-                    LOGGER.info("Finished syncing batch %s. Removing batch from state.", completed_batch_id)
-                    LOGGER.info("Batches to go: %d", len(state['bookmarks'][catalog_entry['tap_stream_id']]["BatchIDs"]))
+                    LOGGER.warn("Finished syncing batch %s. Removing batch from state.", completed_batch_id)
+                    LOGGER.warn("Batches to go: %d", len(state['bookmarks'][catalog_entry['tap_stream_id']]["BatchIDs"]))
                     singer.write_state(state)
             else:
                 raise TapSalesforceException(batch_status['stateMessage'])
@@ -129,7 +126,7 @@ class Bulk():
                 yield result
 
     def _bulk_query_with_pk_chunking(self, catalog_entry, start_date):
-        LOGGER.info("Retrying Bulk Query with PK Chunking")
+        LOGGER.warn("Retrying Bulk Query with PK Chunking")
 
         # Create a new job
         job_id = self._create_job(catalog_entry, True)
@@ -155,7 +152,7 @@ class Bulk():
         headers['Sforce-Disable-Batch-Retry'] = "true"
 
         if pk_chunking:
-            LOGGER.info("ADDING PK CHUNKING HEADER")
+            LOGGER.warn("ADDING PK CHUNKING HEADER")
 
             headers['Sforce-Enable-PKChunking'] = "true; chunkSize={}".format(DEFAULT_CHUNK_SIZE)
 
