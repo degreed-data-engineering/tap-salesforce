@@ -1,11 +1,14 @@
 import time
 import singer
 import singer.utils as singer_utils
+from os import environ as env
 from singer import Transformer, metadata, metrics
 from requests.exceptions import RequestException
 from tap_salesforce.salesforce.bulk import Bulk
 
 LOGGER = singer.get_logger()
+if env.get("MELTANO_LOGGING_LEVEL"):
+    LOGGER.setLevel(env.get("MELTANO_LOGGING_LEVEL"))
 
 BLACKLISTED_FIELDS = set(['attributes'])
 

@@ -5,6 +5,7 @@ import requests
 from requests.exceptions import RequestException
 import singer
 import singer.utils as singer_utils
+from os import environ as env
 from singer import metadata, metrics
 
 from tap_salesforce.salesforce.bulk import Bulk
@@ -16,6 +17,8 @@ from tap_salesforce.salesforce.credentials import SalesforceAuth
 
 
 LOGGER = singer.get_logger()
+if env.get("MELTANO_LOGGING_LEVEL"):
+    LOGGER.setLevel(env.get("MELTANO_LOGGING_LEVEL"))
 
 BULK_API_TYPE = "BULK"
 REST_API_TYPE = "REST"

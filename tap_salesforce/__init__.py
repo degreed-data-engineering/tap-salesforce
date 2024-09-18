@@ -2,6 +2,7 @@
 import asyncio
 import concurrent.futures
 import json
+from os import environ as env
 import sys
 from copy import deepcopy
 
@@ -21,6 +22,8 @@ from tap_salesforce.salesforce.credentials import (
 )
 
 LOGGER = singer.get_logger()
+if env.get("MELTANO_LOGGING_LEVEL"):
+    LOGGER.setLevel(env.get("MELTANO_LOGGING_LEVEL"))
 
 # the tap requires these keys
 REQUIRED_CONFIG_KEYS = ['api_type',

@@ -1,10 +1,13 @@
 # pylint: disable=protected-access
 import singer
 import singer.utils as singer_utils
+from os import environ as env
 from requests.exceptions import HTTPError
 from tap_salesforce.salesforce.exceptions import TapSalesforceException
 
 LOGGER = singer.get_logger()
+if env.get("MELTANO_LOGGING_LEVEL"):
+    LOGGER.setLevel(env.get("MELTANO_LOGGING_LEVEL"))
 
 MAX_RETRIES = 4
 

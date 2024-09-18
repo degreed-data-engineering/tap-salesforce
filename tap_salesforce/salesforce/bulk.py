@@ -5,6 +5,7 @@ import sys
 import time
 import tempfile
 import singer
+from os import environ as env
 from singer import metrics
 from requests.exceptions import RequestException
 
@@ -19,6 +20,8 @@ ITER_CHUNK_SIZE = 1024
 DEFAULT_CHUNK_SIZE = 50000
 
 LOGGER = singer.get_logger()
+if env.get("MELTANO_LOGGING_LEVEL"):
+    LOGGER.setLevel(env.get("MELTANO_LOGGING_LEVEL"))
 
 # pylint: disable=inconsistent-return-statements
 def find_parent(stream):
