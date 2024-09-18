@@ -6,6 +6,7 @@ from simple_salesforce import SalesforceLogin
 
 
 LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARN)
 
 OAuthCredentials = namedtuple('OAuthCredentials', (
