@@ -6,6 +6,7 @@ from requests.exceptions import RequestException
 from tap_salesforce.salesforce.bulk import Bulk
 
 LOGGER = singer.get_logger()
+LOGGER.setLevel('WARN')
 
 BLACKLISTED_FIELDS = set(['attributes'])
 

@@ -16,6 +16,7 @@ from tap_salesforce.salesforce.credentials import SalesforceAuth
 
 
 LOGGER = singer.get_logger()
+LOGGER.setLevel('WARN')
 
 BULK_API_TYPE = "BULK"
 REST_API_TYPE = "REST"
