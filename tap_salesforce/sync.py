@@ -6,9 +6,7 @@ from singer import Transformer, metadata, metrics
 from requests.exceptions import RequestException
 from tap_salesforce.salesforce.bulk import Bulk
 
-LOGGER = singer.get_logger()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARN)
+logging.basicConfig(level=logging.WARNING)
 
 BLACKLISTED_FIELDS = set(['attributes'])
 
@@ -58,7 +56,7 @@ def resume_syncing_bulk_query(sf, catalog_entry, job_id, state, counter):
     schema = catalog_entry['schema']
 
     if not bulk.job_exists(job_id):
-        LOGGER.warn("Found stored Job ID that no longer exists, resetting bookmark and removing JobID from state.")
+        logging.warning("Found stored Job ID that no longer exists, resetting bookmark and removing JobID from state.")
         return counter
 
     # Iterate over the remaining batches, removing them once they are synced
@@ -86,8 +84,8 @@ def resume_syncing_bulk_query(sf, catalog_entry, job_id, state, counter):
                                       'JobHighestBookmarkSeen',
                                       singer_utils.strftime(current_bookmark))
         batch_ids.remove(batch_id)
-        LOGGER.warn("Finished syncing batch %s. Removing batch from state.", batch_id)
-        LOGGER.warn("Batches to go: %d", len(batch_ids))
+        logging.warning("Finished syncing batch %s. Removing batch from state.", batch_id)
+        logging.warning("Batches to go: %d", len(batch_ids))
         singer.write_state(state)
 
 def sync_stream(sf, catalog_entry, state, state_msg_threshold):
@@ -118,7 +116,7 @@ def sync_records(sf, catalog_entry, state, counter, state_msg_threshold):
 
     start_time = singer_utils.now()
 
-    LOGGER.warn('Syncing Salesforce data for stream %s', stream)
+    logging.warning('Syncing Salesforce data for stream %s', stream)
 
     for rec in sf.query(catalog_entry, state):
         counter.increment()

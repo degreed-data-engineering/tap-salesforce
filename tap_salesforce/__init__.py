@@ -21,9 +21,7 @@ from tap_salesforce.salesforce.credentials import (
     parse_credentials
 )
 
-LOGGER = singer.get_logger()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARN)
+logging.basicConfig(level=logging.WARNING)
 
 # the tap requires these keys
 REQUIRED_CONFIG_KEYS = ['api_type',
@@ -219,18 +217,18 @@ def do_discover(sf):
         missing_unsupported_field_names = [f[0] for f in unsupported_fields if f[0] not in field_name_set]
 
         if missing_unsupported_field_names:
-            LOGGER.warn("Ignoring the following unsupported fields for object %s as they are missing from the field list: %s",
+            logging.warning("Ignoring the following unsupported fields for object %s as they are missing from the field list: %s",
                         sobject_name,
                         ', '.join(sorted(missing_unsupported_field_names)))
 
         if filtered_unsupported_fields:
-            LOGGER.warn("Not syncing the following unsupported fields for object %s: %s",
+            logging.warning("Not syncing the following unsupported fields for object %s: %s",
                         sobject_name,
                         ', '.join(sorted([k for k, _ in filtered_unsupported_fields])))
 
         # Salesforce Objects are skipped when they do not have an Id field
         if not found_id_field:
-            LOGGER.warn(
+            logging.warning(
                 "Skipping Salesforce Object %s, as it has no Id field",
                 sobject_name)
             continue
@@ -288,10 +286,10 @@ def do_discover(sf):
     unsupported_tag_objects = [object_to_tag_references[f]
                                for f in sf_custom_setting_objects if f in object_to_tag_references]
     if unsupported_tag_objects:
-        LOGGER.warn( #pylint:disable=logging-not-lazy
+        logging.warning( #pylint:disable=logging-not-lazy
             "Skipping the following Tag objects, Tags on Custom Settings Salesforce objects " +
             "are not supported by the Bulk API:")
-        LOGGER.warn(unsupported_tag_objects)
+        logging.warning(unsupported_tag_objects)
         entries = [e for e in entries if e['stream']
                    not in unsupported_tag_objects]
 
@@ -350,7 +348,7 @@ def is_property_selected(  # noqa: C901  # ignore 'too complex'
 
     if inclusion == "unsupported":
         if selected is True:
-            LOGGER.debug(
+            logging.debug(
                 "Property '%s' was selected but is not supported. "
                 "Ignoring selected==True input.",
                 ":".join(breadcrumb),
@@ -359,7 +357,7 @@ def is_property_selected(  # noqa: C901  # ignore 'too complex'
 
     if inclusion == "automatic":
         if selected is False:
-            LOGGER.debug(
+            logging.debug(
                 "Property '%s' was deselected while also set "
                 "for automatic inclusion. Ignoring selected==False input.",
                 ":".join(breadcrumb),
@@ -372,7 +370,7 @@ def is_property_selected(  # noqa: C901  # ignore 'too complex'
     if selected_by_default is not None:
         return selected_by_default
 
-    LOGGER.debug(
+    logging.debug(
         "Selection metadata omitted for '%s':'%s'. "
         "Using parent value of selected=%s.",
         stream_name,
@@ -400,7 +398,7 @@ def pop_deselected_schema(
         selected = is_property_selected(
             stream_name, metadata_map, property_breadcrumb
         )
-        LOGGER.warn(stream_name + '.' + property_name + ' - ' + str(selected))
+        logging.warning(stream_name + '.' + property_name + ' - ' + str(selected))
         if not selected:
             schema["properties"].pop(property_name)
             continue
@@ -426,10 +424,10 @@ async def sync_catalog_entry(sf, catalog_entry, state):
     mdata = metadata.to_map(catalog_entry['metadata'])
 
     if not stream_is_selected(mdata):
-        LOGGER.warn("%s: Skipping - not selected", stream_name)
+        logging.warning("%s: Skipping - not selected", stream_name)
         return
 
-    LOGGER.warn("%s: Starting", stream_name)
+    logging.warning("%s: Starting", stream_name)
 
     singer.write_state(state)
     key_properties = metadata.to_map(catalog_entry['metadata']).get((), {}).get('table-key-properties')
@@ -449,10 +447,10 @@ async def sync_catalog_entry(sf, catalog_entry, state):
     job_id = singer.get_bookmark(state, catalog_entry['tap_stream_id'], 'JobID')
     if job_id:
         with metrics.record_counter(stream) as counter:
-            LOGGER.warn("Found JobID from previous Bulk Query. Resuming sync for job: %s", job_id)
+            logging.warning("Found JobID from previous Bulk Query. Resuming sync for job: %s", job_id)
             # Resuming a sync should clear out the remaining state once finished
             await loop.run_in_executor(None, resume_syncing_bulk_query, sf, catalog_entry, job_id, state, counter)
-            LOGGER.warn("Completed sync for %s", stream_name)
+            logging.warning("Completed sync for %s", stream_name)
             state.get('bookmarks', {}).get(catalog_entry['tap_stream_id'], {}).pop('JobID', None)
             state.get('bookmarks', {}).get(catalog_entry['tap_stream_id'], {}).pop('BatchIDs', None)
             bookmark = state.get('bookmarks', {}).get(catalog_entry['tap_stream_id'], {}).pop('JobHighestBookmarkSeen', None)
@@ -477,10 +475,10 @@ async def sync_catalog_entry(sf, catalog_entry, state):
                                           'version',
                                           stream_version)
         await loop.run_in_executor(None, sync_stream, sf, catalog_entry, state, state_msg_threshold)
-        LOGGER.warn("Completed sync for %s", stream_name)
+        logging.warning("Completed sync for %s", stream_name)
 
 def do_sync(sf, catalog, state):
-    LOGGER.warn("Starting sync")
+    logging.warning("Starting sync")
 
     max_workers = CONFIG.get('max_workers', 8)
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
@@ -501,7 +499,7 @@ def do_sync(sf, catalog, state):
         loop.close()
 
     singer.write_state(state)
-    LOGGER.warn("Finished sync")
+    logging.warning("Finished sync")
 
 def main_impl():
     args = singer_utils.parse_args(REQUIRED_CONFIG_KEYS)
@@ -529,11 +527,11 @@ def main_impl():
     finally:
         if sf:
             if sf.rest_requests_attempted > 0:
-                LOGGER.debug(
+                logging.debug(
                     "This job used %s REST requests towards the Salesforce quota.",
                     sf.rest_requests_attempted)
             if sf.jobs_completed > 0:
-                LOGGER.debug(
+                logging.debug(
                     "Replication used %s Bulk API jobs towards the Salesforce quota.",
                     sf.jobs_completed)
             if sf.auth.login_timer:
@@ -544,11 +542,11 @@ def main():
     try:
         main_impl()
     except TapSalesforceQuotaExceededException as e:
-        LOGGER.critical(e)
+        logging.error(e)
         sys.exit(2)
     except TapSalesforceException as e:
-        LOGGER.critical(e)
+        logging.error(e)
         sys.exit(1)
     except Exception as e:
-        LOGGER.critical(e)
+        logging.error(e)
         raise e

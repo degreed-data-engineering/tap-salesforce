@@ -19,9 +19,7 @@ PK_CHUNKED_BATCH_STATUS_POLLING_SLEEP = 60
 ITER_CHUNK_SIZE = 1024
 DEFAULT_CHUNK_SIZE = 50000
 
-LOGGER = singer.get_logger()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARN)
+logging.basicConfig(level=logging.WARNING)
 
 # pylint: disable=inconsistent-return-statements
 def find_parent(stream):
@@ -119,8 +117,8 @@ class Bulk():
                         yield result
                     # Remove the completed batch ID and write state
                     state['bookmarks'][catalog_entry['tap_stream_id']]["BatchIDs"].remove(completed_batch_id)
-                    LOGGER.warn("Finished syncing batch %s. Removing batch from state.", completed_batch_id)
-                    LOGGER.warn("Batches to go: %d", len(state['bookmarks'][catalog_entry['tap_stream_id']]["BatchIDs"]))
+                    logging.warning("Finished syncing batch %s. Removing batch from state.", completed_batch_id)
+                    logging.warning("Batches to go: %d", len(state['bookmarks'][catalog_entry['tap_stream_id']]["BatchIDs"]))
                     singer.write_state(state)
             else:
                 raise TapSalesforceException(batch_status['stateMessage'])
@@ -129,7 +127,7 @@ class Bulk():
                 yield result
 
     def _bulk_query_with_pk_chunking(self, catalog_entry, start_date):
-        LOGGER.warn("Retrying Bulk Query with PK Chunking")
+        logging.warning("Retrying Bulk Query with PK Chunking")
 
         # Create a new job
         job_id = self._create_job(catalog_entry, True)
@@ -155,7 +153,7 @@ class Bulk():
         headers['Sforce-Disable-Batch-Retry'] = "true"
 
         if pk_chunking:
-            LOGGER.warn("ADDING PK CHUNKING HEADER")
+            logging.warning("ADDING PK CHUNKING HEADER")
 
             headers['Sforce-Enable-PKChunking'] = "true; chunkSize={}".format(DEFAULT_CHUNK_SIZE)
 

@@ -5,9 +5,7 @@ from collections import namedtuple
 from simple_salesforce import SalesforceLogin
 
 
-LOGGER = logging.getLogger(__name__)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARN)
+logging.basicConfig(level=logging.WARNING)
 
 OAuthCredentials = namedtuple('OAuthCredentials', (
     "client_id",
@@ -87,7 +85,7 @@ class SalesforceAuthOAuth(SalesforceAuth):
 
     def login(self):
         try:
-            LOGGER.warn("Attempting login via OAuth2")
+            logging.warning("Attempting login via OAuth2")
 
             resp = requests.post(self._login_url,
                                  data=self._login_body,
@@ -96,7 +94,7 @@ class SalesforceAuthOAuth(SalesforceAuth):
             resp.raise_for_status()
             auth = resp.json()
 
-            LOGGER.warn("OAuth2 login successful")
+            logging.warning("OAuth2 login successful")
             self._access_token = auth['access_token']
             self._instance_url = auth['instance_url']
         except Exception as e:
@@ -105,7 +103,7 @@ class SalesforceAuthOAuth(SalesforceAuth):
                 error_message = error_message + ", Response from Salesforce: {}".format(resp.text)
             raise Exception(error_message) from e
         finally:
-            LOGGER.warn("Starting new login timer")
+            logging.warning("Starting new login timer")
             self.login_timer = threading.Timer(self.REFRESH_TOKEN_EXPIRATION_PERIOD, self.login)
             self.login_timer.start()
 

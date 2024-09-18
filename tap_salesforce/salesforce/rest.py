@@ -5,9 +5,7 @@ import singer.utils as singer_utils
 from requests.exceptions import HTTPError
 from tap_salesforce.salesforce.exceptions import TapSalesforceException
 
-LOGGER = singer.get_logger()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARN)
+logging.basicConfig(level=logging.WARNING)
 
 MAX_RETRIES = 4
 
@@ -65,7 +63,7 @@ class Rest():
             if isinstance(response, list) and response[0].get("errorCode") == "QUERY_TIMEOUT":
                 start_date = singer_utils.strptime_with_tz(start_date_str)
                 day_range = (end_date - start_date).days
-                LOGGER.warn(
+                logging.warning(
                     "Salesforce returned QUERY_TIMEOUT querying %d days of %s",
                     day_range,
                     catalog_entry['stream'])

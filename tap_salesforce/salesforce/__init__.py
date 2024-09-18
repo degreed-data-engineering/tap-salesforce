@@ -15,10 +15,7 @@ from tap_salesforce.salesforce.exceptions import (
     TapSalesforceQuotaExceededException)
 from tap_salesforce.salesforce.credentials import SalesforceAuth
 
-
-LOGGER = singer.get_logger()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARN)
+logging.basicConfig(level=logging.WARNING)
 
 BULK_API_TYPE = "BULK"
 REST_API_TYPE = "REST"
@@ -139,7 +136,7 @@ QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS = set(['DataType',
                                              'QuoteTemplateRichTextData'])
 
 def log_backoff_attempt(details):
-    LOGGER.warn("ConnectionError detected, triggering backoff: %d try", details.get("tries"))
+    logging.warning("ConnectionError detected, triggering backoff: %d try", details.get("tries"))
 
 
 def field_to_property_schema(field, mdata):
@@ -241,7 +238,7 @@ class Salesforce():
 
         remaining, allotted = map(int, match.groups())
 
-        LOGGER.warn("Used %s of %s daily REST API quota", remaining, allotted)
+        logging.warning("Used %s of %s daily REST API quota", remaining, allotted)
 
         percent_used_from_total = (remaining / allotted) * 100
         max_requests_for_run = int((self.quota_percent_per_run * allotted) / 100)
@@ -278,10 +275,10 @@ class Salesforce():
                           on_backoff=log_backoff_attempt)
     def _make_request(self, http_method, url, headers=None, body=None, stream=False, params=None):
         if http_method == "GET":
-            LOGGER.warn("Making %s request to %s with params: %s", http_method, url, params)
+            logging.warning("Making %s request to %s with params: %s", http_method, url, params)
             resp = self.session.get(url, headers=headers, stream=stream, params=params)
         elif http_method == "POST":
-            LOGGER.warn("Making %s request to %s with body %s", http_method, url, body)
+            logging.warning("Making %s request to %s with body %s", http_method, url, body)
             resp = self.session.post(url, headers=headers, data=body)
         else:
             raise TapSalesforceException("Unsupported HTTP method")
