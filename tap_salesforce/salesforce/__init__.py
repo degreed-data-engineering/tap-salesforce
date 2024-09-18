@@ -26,6 +26,7 @@ logger.setLevel(logging.WARN)
 logger.warning("#"*30)
 for name in logging.root.manager.loggerDict:
     logging.getLogger(name).setLevel(logging.WARN)
+    logger.warning(name)
 logger.warning("#"*30)
 
 BULK_API_TYPE = "BULK"
