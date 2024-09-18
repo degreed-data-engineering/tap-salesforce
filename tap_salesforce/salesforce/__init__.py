@@ -23,6 +23,11 @@ logger = logging.getLogger(__name__)
 logger.addHandler(handler)
 logger.setLevel(logging.WARN)
 
+logging.warninig("#"*30)
+for name in logging.root.manager.loggerDict:
+    logging.getLogger(name).setLevel(logging.WARN)
+logging.warninig("#"*30)
+
 BULK_API_TYPE = "BULK"
 REST_API_TYPE = "REST"
 
