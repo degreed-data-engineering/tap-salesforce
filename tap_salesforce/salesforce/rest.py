@@ -9,7 +9,7 @@ handler = logging.StreamHandler()
 handler.setLevel(logging.WARN)
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
 handler.setFormatter(formatter)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('tap-salesforce')
 logger.addHandler(handler)
 logger.setLevel(logging.WARN)
 
