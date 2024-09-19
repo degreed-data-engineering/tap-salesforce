@@ -1,4 +1,5 @@
 import logging
+import json
 import re
 import time
 import backoff
@@ -281,10 +282,24 @@ class Salesforce():
                           on_backoff=log_backoff_attempt)
     def _make_request(self, http_method, url, headers=None, body=None, stream=False, params=None):
         if http_method == "GET":
-            logger.warning("Making %s request to %s with params: %s", http_method, url, params)
+            logger.warning(json.dumps({
+                'type': 'discovery',
+                'stdio': 'stderr',
+                'name': 'tap-salesforce',
+                'event': f'Making {http_method} request to {url} with params: {params}',
+                'level': 'warning',
+                'timestamp': '2024-09-19T13:42:12.054759Z'
+            }))
             resp = self.session.get(url, headers=headers, stream=stream, params=params)
         elif http_method == "POST":
-            logger.warning("Making %s request to %s with body %s", http_method, url, body)
+            logger.warning(json.dumps({
+                'type': 'discovery',
+                'stdio': 'stderr',
+                'name': 'tap-salesforce',
+                'event': f'Making {http_method} request to {url} with params: {params}',
+                'level': 'warning',
+                'timestamp': '2024-09-19T13:42:12.054759Z'
+            }))
             resp = self.session.post(url, headers=headers, data=body)
         else:
             raise TapSalesforceException("Unsupported HTTP method")
